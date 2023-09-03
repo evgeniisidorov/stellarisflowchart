@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Flowchart from './components/Flowchart.vue';
+import FlowChart from './components/FlowChart.vue'
 import HelloWorld from './components/HelloWorld.vue'
 </script>
 
@@ -13,7 +13,7 @@ import HelloWorld from './components/HelloWorld.vue'
   </header>
 
   <main>
-    <Flowchart />
+    <FlowChart />
   </main>
 </template>
 

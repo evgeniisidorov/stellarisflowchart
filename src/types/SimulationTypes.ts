@@ -1,6 +1,7 @@
 import type { ResourceType } from '@/types/DataTypes'
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3'
 
+
 export interface LinkType extends SimulationLinkDatum<NodeType> {
   value: number
 }
@@ -8,4 +9,6 @@ export interface LinkType extends SimulationLinkDatum<NodeType> {
 export interface NodeType extends SimulationNodeDatum {
   id: number
   name: ResourceType
+  screenX?: number
+  screenY?: number
 }
