@@ -1,4 +1,3 @@
-export * from './NodeType'
-export * from './LinkType'
+export * from './SimulationTypes'
 export * from './DataTypes'
 

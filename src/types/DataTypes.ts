@@ -1,6 +1,4 @@
-import { type LinkType } from '@/types/LinkType'
-import { type NodeType } from '@/types/NodeType'
-
+import type { LinkType, NodeType } from '@/types/SimulationTypes'
 export type ResourceType = 'food' | 'energy' | 'mineral' | 'alloys'
 
 export interface MockData {
