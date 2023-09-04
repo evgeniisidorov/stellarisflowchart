@@ -4,6 +4,7 @@ import { type INodeDatum, type ILinkDatum, mock_data as data } from '@/types'
 import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/constants'
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
+import { buildLinks } from '@/utils/links'
 </script>
 
 <script setup lang="ts">
@@ -14,8 +15,8 @@ let graph: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   node: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>,
   simulation: d3.Simulation<INodeDatum, ILinkDatum>
 
-const links: Array<ILinkDatum> = data.links.map((d) => ({ ...d }) as ILinkDatum)
 const nodes: Array<INodeDatum> = data.nodes.map((d) => ({ ...d }) as INodeDatum)
+const links: Array<ILinkDatum> = buildLinks(nodes, data.job_resources)
 
 const grid: IGrid = buildGrid(CANVAS_WIDTH, CANVAS_HEIGHT, GRID_SIZE)
 
@@ -138,7 +139,7 @@ function graphInit() {
     .data(links)
     .join('line')
     .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
-    .attr('stroke', (datum: ILinkDatum) => datum.value > 0 ? 'green' : 'red')
+    .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
 
   node = graph.append('g').selectAll<SVGSVGElement, INodeDatum>('g').data(nodes).join('g')
 
@@ -152,21 +153,17 @@ function graphInit() {
   node
     .append('image')
     .attr('href', (datum: INodeDatum) => {
-      let iconName;
+      let iconName
       switch (datum.type) {
         case 'resource':
           iconName = datum.resource
           break
         case 'job':
-          iconName = "job_" + String(datum.job)
-          console.log(iconName)
+          iconName = 'job_' + String(datum.job)
           break
       }
 
-      const imageUrl = new URL(
-        `../assets/icons/${datum.type}/${iconName}.png`,
-        import.meta.url
-      )
+      const imageUrl = new URL(`../assets/icons/${datum.type}/${iconName}.png`, import.meta.url)
       return imageUrl.href
     })
     .attr('width', ICON_SIZE)
@@ -188,7 +185,7 @@ function graphInit() {
 
   node.call(
     d3
-      .drag<SVGSVGElement, INodeDatum, undefined>()
+      .drag<SVGGElement, INodeDatum, undefined>()
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended)
@@ -198,7 +195,7 @@ function graphInit() {
     graph.select('g.gridcanvas').remove()
     grid.init()
 
-    var gridCanvas = graph.append('svg:g').attr('class', 'gridcanvas')
+    const gridCanvas = graph.append('svg:g').attr('class', 'gridcanvas')
 
     grid.cells.forEach((c) => {
       gridCanvas
