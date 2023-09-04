@@ -1,14 +1,13 @@
-import type { ResourceType } from '@/types/DataTypes'
+import type { ISupplyChainNode } from '@/types/DataTypes'
 import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3'
 
 
-export interface LinkType extends SimulationLinkDatum<NodeType> {
+export interface ILinkDatum extends SimulationLinkDatum<INodeDatum> {
   value: number
 }
 
-export interface NodeType extends SimulationNodeDatum {
+export interface INodeDatum extends SimulationNodeDatum, ISupplyChainNode {
   id: number
-  name: ResourceType
   screenX?: number
   screenY?: number
 }

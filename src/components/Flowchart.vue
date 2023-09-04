@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMounted, ref, type Ref } from 'vue'
-import { type NodeType, type LinkType, mock_data as data } from '@/types'
-import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH } from '@/utils/constants'
+import { type INodeDatum, type ILinkDatum, mock_data as data } from '@/types'
+import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/constants'
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
 </script>
@@ -10,50 +10,50 @@ import { buildGrid, type IGrid } from '@/utils/grid'
 const canvas: Ref<HTMLDivElement | null> = ref(null)
 
 let graph: d3.Selection<SVGSVGElement, unknown, null, undefined>,
-  link: d3.Selection<SVGLineElement, LinkType, SVGGElement, undefined>,
-  node: d3.Selection<SVGCircleElement, NodeType, SVGGElement, undefined>,
-  simulation: d3.Simulation<NodeType, undefined>
+  link: d3.Selection<SVGLineElement, ILinkDatum, SVGGElement, undefined>,
+  node: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>,
+  simulation: d3.Simulation<INodeDatum, ILinkDatum>
 
-const links: Array<LinkType> = data.links.map((d) => ({ ...d }) as LinkType)
-const nodes: Array<NodeType> = data.nodes.map((d) => ({ ...d }) as NodeType)
+const links: Array<ILinkDatum> = data.links.map((d) => ({ ...d }) as ILinkDatum)
+const nodes: Array<INodeDatum> = data.nodes.map((d) => ({ ...d }) as INodeDatum)
 
 const grid: IGrid = buildGrid(CANVAS_WIDTH, CANVAS_HEIGHT, GRID_SIZE)
 
 function ticked() {
   link
-    .attr('x1', (d: LinkType): number => (d.source as NodeType).x || 0)
-    .attr('y1', (d: LinkType): number => (d.source as NodeType).y || 0)
-    .attr('x2', (d: LinkType): number => (d.source as NodeType).x || 0)
-    .attr('y2', (d: LinkType): number => (d.source as NodeType).y || 0)
+    .attr('x1', (d: ILinkDatum): number => (d.source as INodeDatum).x || 0)
+    .attr('y1', (d: ILinkDatum): number => (d.source as INodeDatum).y || 0)
+    .attr('x2', (d: ILinkDatum): number => (d.source as INodeDatum).x || 0)
+    .attr('y2', (d: ILinkDatum): number => (d.source as INodeDatum).y || 0)
   node
-    .attr('cx', (d: NodeType) => {
+    .attr('cx', (d: INodeDatum) => {
       return d.x || 0
     })
-    .attr('cy', (d: NodeType) => d.y || 0)
+    .attr('cy', (d: INodeDatum) => d.y || 0)
 }
 
 function updateLink(
-  selection: d3.Selection<SVGLineElement, LinkType, SVGGElement, undefined>
+  selection: d3.Selection<SVGLineElement, ILinkDatum, SVGGElement, undefined>
 ): void {
   selection
-    .attr('x1', function (d: LinkType): number {
-      return (d.source as NodeType).screenX || 0
+    .attr('x1', function (d: ILinkDatum): number {
+      return (d.source as INodeDatum).screenX || 0
     })
-    .attr('y1', function (d: LinkType): number {
-      return (d.source as NodeType).screenY || 0
+    .attr('y1', function (d: ILinkDatum): number {
+      return (d.source as INodeDatum).screenY || 0
     })
-    .attr('x2', function (d: LinkType): number {
-      return (d.target as NodeType).screenX || 0
+    .attr('x2', function (d: ILinkDatum): number {
+      return (d.target as INodeDatum).screenX || 0
     })
-    .attr('y2', function (d: LinkType): number {
-      return (d.target as NodeType).screenY || 0
+    .attr('y2', function (d: ILinkDatum): number {
+      return (d.target as INodeDatum).screenY || 0
     })
 }
 
 function updateNode(
-  selection: d3.Selection<SVGCircleElement, NodeType, SVGGElement, undefined>
+  selection: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>
 ): void {
-  selection.attr('transform', function (d: NodeType): string {
+  selection.attr('transform', function (d: INodeDatum): string {
     const gridpoint = grid.occupyNearest(d)
 
     if (gridpoint) {
@@ -65,7 +65,13 @@ function updateNode(
       if (d.x) d.x += (gridpoint.x - d.x) * 0.05
       if (d.y) d.y += (gridpoint.y - d.y) * 0.05
     }
-    return 'translate(' + d.screenX + ',' + d.screenY + ')'
+    return (
+      'translate(' +
+      (d.screenX ? d.screenX : 0) + // must account for centering element
+      ',' +
+      (d.screenY ? d.screenY : 0) +
+      ')'
+    )
   })
 }
 
@@ -89,33 +95,33 @@ function dragended(event: any) {
   event.subject.fy = null
 }
 
-function addNode() {
-  simulation.nodes().push({ id: 4, name: 'food', index: 4 })
-  graphUpdate()
-  // simulation.restart()
-}
+// function addNode() {
+//   simulation.nodes().push({ id: 4, resource: 'food', index: 4, type: 'resource' })
+//   graphUpdate()
+//   // simulation.restart()
+// }
 
-function removeNode() {
-  simulation.nodes().pop()
-  graphUpdate()
-}
+// function removeNode() {
+//   simulation.nodes().pop()
+//   graphUpdate()
+// }
 
-function graphUpdate() {
-  node = node.data(nodes)
-  node.exit().remove()
+// function graphUpdate() {
+//   node = node.data(nodes)
+//   node.exit().remove()
 
-  node = node.enter().append('circle').attr('r', 16).attr('fill', '#4f1').merge(node)
+//   node = node.enter().append('circle').attr('r', 16).attr('fill', '#4f1').merge(node)
 
-  node.call(
-    d3
-      .drag<SVGCircleElement, NodeType, undefined>()
-      .on('start', dragstarted)
-      .on('drag', dragged)
-      .on('end', dragended)
-  )
+//   node.call(
+//     d3
+//       .drag<SVGCircleElement, INodeDatum, undefined>()
+//       .on('start', dragstarted)
+//       .on('drag', dragged)
+//       .on('end', dragended)
+//   )
 
-  simulation.nodes(nodes).restart()
-}
+//   simulation.nodes(nodes).restart()
+// }
 
 function graphInit() {
   graph = d3
@@ -128,36 +134,61 @@ function graphInit() {
     .append('g')
     .attr('stroke', '#999')
     .attr('stroke-opacity', 0.6)
-    .selectAll<SVGLineElement, LinkType>('line')
+    .selectAll<SVGLineElement, ILinkDatum>('line')
     .data(links)
     .join('line')
-    .attr('stroke-width', (d: LinkType) => Math.sqrt(d.value))
+    .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
+    .attr('stroke', (datum: ILinkDatum) => datum.value > 0 ? 'green' : 'red')
 
-  node = graph
-    .append('g')
-    .attr('stroke', '#fff')
+  node = graph.append('g').selectAll<SVGSVGElement, INodeDatum>('g').data(nodes).join('g')
+
+  node
+    .append('circle')
+    .attr('r', ICON_SIZE / 2)
+    .style('fill', '#20381E')
+    .attr('stroke', '#101814')
     .attr('stroke-width', 1.5)
-    .selectAll<SVGCircleElement, NodeType>('circle')
-    .data(nodes)
-    .join('circle')
-    .attr('r', 8)
-    .attr('fill', '#4f1')
+
+  node
+    .append('image')
+    .attr('href', (datum: INodeDatum) => {
+      let iconName;
+      switch (datum.type) {
+        case 'resource':
+          iconName = datum.resource
+          break
+        case 'job':
+          iconName = "job_" + String(datum.job)
+          console.log(iconName)
+          break
+      }
+
+      const imageUrl = new URL(
+        `../assets/icons/${datum.type}/${iconName}.png`,
+        import.meta.url
+      )
+      return imageUrl.href
+    })
+    .attr('width', ICON_SIZE)
+    .attr('height', ICON_SIZE)
+    .attr('transform', `translate(${-ICON_SIZE / 2},${-ICON_SIZE / 2})`)
 
   simulation = d3
-    .forceSimulation<NodeType>(nodes)
+    .forceSimulation<INodeDatum>(nodes)
     .force(
       'link',
       d3.forceLink(links).id((d: d3.SimulationNodeDatum, i: number): number => {
         return d.index || 0
       })
     )
-    .force('charge', d3.forceManyBody<NodeType>())
-    .force('center', d3.forceCenter<NodeType>(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2))
+    .force('charge', d3.forceManyBody<INodeDatum>())
+    .force('collide', d3.forceCollide<INodeDatum>(30))
+    .force('center', d3.forceCenter<INodeDatum>(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2))
     .on('tick', ticked)
 
   node.call(
     d3
-      .drag<SVGCircleElement, NodeType, undefined>()
+      .drag<SVGSVGElement, INodeDatum, undefined>()
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended)
@@ -193,9 +224,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <!-- <div>
     <button @click="addNode">Add Node</button>
     <button @click="removeNode">Remove Node</button>
-  </div>
+  </div> -->
   <div ref="canvas" />
 </template>

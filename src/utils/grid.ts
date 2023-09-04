@@ -1,4 +1,4 @@
-import type { NodeType } from '@/types'
+import type { INodeDatum } from '@/types'
 
 export interface IGridCellType {
   x: number
@@ -9,8 +9,8 @@ export interface IGridCellType {
 export interface IGrid {
   cells: IGridCellType[]
   init: { (): void }
-  sqdist: { (a: NodeType, b: IGridCellType): number }
-  occupyNearest: { (p: NodeType): IGridCellType | null }
+  sqdist: { (a: INodeDatum, b: IGridCellType): number }
+  occupyNearest: { (p: INodeDatum): IGridCellType | null }
 }
 
 export function buildGrid(width: number, height: number, grid_size: number): IGrid {
@@ -34,11 +34,11 @@ export function buildGrid(width: number, height: number, grid_size: number): IGr
       }
     },
 
-    sqdist: function (a: NodeType, b: IGridCellType): number {
+    sqdist: function (a: INodeDatum, b: IGridCellType): number {
       return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)
     },
 
-    occupyNearest: function (p: NodeType) {
+    occupyNearest: function (p: INodeDatum) {
       let minDist: number = 1000000
       let d: number
       let candidate: IGridCellType | null = null
