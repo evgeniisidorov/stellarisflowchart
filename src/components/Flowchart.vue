@@ -195,7 +195,11 @@ function graphInit() {
     graph.select('g.gridcanvas').remove()
     grid.init()
 
-    const gridCanvas = graph.append('svg:g').attr('class', 'gridcanvas')
+    const gridCanvas = graph
+      .append('svg:g')
+      .attr('class', 'gridcanvas')
+      .attr('width', GRID_SIZE)
+      .attr('height', GRID_SIZE)
 
     grid.cells.forEach((c) => {
       gridCanvas

@@ -2,6 +2,9 @@ import type { INodeDatum, IJobResource, JobType, ILinkDatum, ResourceType } from
 
 export type JobResource = JobType | ResourceType
 
+/*
+ * Create the dictionary from nodes: Job/Resource -> number (node.id)
+ */
 function buildJobIndexDict(nodes: INodeDatum[]): Record<JobResource, number> {
   const record: Record<JobResource, number> = {
     food: 0,
@@ -12,7 +15,7 @@ function buildJobIndexDict(nodes: INodeDatum[]): Record<JobResource, number> {
     farmer: 5,
     technician: 6,
     miner: 7,
-    foundry: 8, 
+    foundry: 8,
     artisan: 9
   }
   return record
