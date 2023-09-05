@@ -4,7 +4,6 @@ import { type INodeDatum, type ILinkDatum, mock_data as data } from '@/types'
 import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/constants'
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
-import { buildLinks } from '@/utils/links'
 import { getData, getLinks, getNodes } from '@/utils/data'
 </script>
 
@@ -16,8 +15,8 @@ let graph: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   node: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>,
   simulation: d3.Simulation<INodeDatum, ILinkDatum>
 
-let nodes: Array<INodeDatum>;
-let links: Array<ILinkDatum>;
+let nodes: Array<INodeDatum>
+let links: Array<ILinkDatum>
 
 const grid: IGrid = buildGrid(CANVAS_WIDTH, CANVAS_HEIGHT, GRID_SIZE)
 
@@ -97,61 +96,18 @@ function dragended(event: any) {
   event.subject.fy = null
 }
 
-// function addNode() {
-//   simulation.nodes().push({ id: 4, resource: 'food', index: 4, type: 'resource' })
-//   graphUpdate()
-//   // simulation.restart()
-// }
-
-// function removeNode() {
-//   simulation.nodes().pop()
-//   graphUpdate()
-// }
-
-// function graphUpdate() {
-//   node = node.data(nodes)
-//   node.exit().remove()
-
-//   node = node.enter().append('circle').attr('r', 16).attr('fill', '#4f1').merge(node)
-
-//   node.call(
-//     d3
-//       .drag<SVGCircleElement, INodeDatum, undefined>()
-//       .on('start', dragstarted)
-//       .on('drag', dragged)
-//       .on('end', dragended)
-//   )
-
-//   simulation.nodes(nodes).restart()
-// }
-
-function graphInit() {
-  graph = d3
-    .select(canvas.value)
-    .append('svg')
-    .attr('width', CANVAS_WIDTH)
-    .attr('height', CANVAS_HEIGHT)
-
-  link = graph
-    .append('g')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
-    .selectAll<SVGLineElement, ILinkDatum>('line')
-    .data(links)
-    .join('line')
-    .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
-    .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
-
-  node = graph.append('g').selectAll<SVGSVGElement, INodeDatum>('g').data(nodes).join('g')
-
-  node
+function enterNodes(
+  enter: d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown>
+): d3.Selection<SVGGElement, INodeDatum, SVGGElement, unknown> {
+  const container = enter.append('g').attr('class', 'nodeContainer')
+  container
     .append('circle')
     .attr('r', ICON_SIZE / 2)
     .style('fill', '#20381E')
     .attr('stroke', '#101814')
     .attr('stroke-width', 1.5)
 
-  node
+  container
     .append('image')
     .attr('href', (datum: INodeDatum) => {
       let iconName
@@ -171,6 +127,44 @@ function graphInit() {
     .attr('height', ICON_SIZE)
     .attr('transform', `translate(${-ICON_SIZE / 2},${-ICON_SIZE / 2})`)
 
+  container.call(
+    d3
+      .drag<SVGGElement, INodeDatum, undefined>()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended)
+  )
+  return container
+}
+
+function updateData(newNode: INodeDatum): void {
+  const oldNodes: INodeDatum[] = node.data()
+  oldNodes.push(newNode)
+
+  node = node.data(oldNodes).join(enterNodes)
+  simulation = simulation.nodes(oldNodes)
+  simulation.restart()
+}
+
+function graphInit() {
+  graph = d3
+    .select(canvas.value)
+    .append('svg')
+    .attr('width', CANVAS_WIDTH)
+    .attr('height', CANVAS_HEIGHT)
+
+  link = graph
+    .append('g')
+    .attr('stroke', '#999')
+    .attr('stroke-opacity', 0.6)
+    .selectAll<SVGLineElement, ILinkDatum>('line')
+    .data(links)
+    .join('line')
+    .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
+    .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
+
+  node = graph.append('g').selectAll<SVGSVGElement, INodeDatum>('g').data(nodes).join(enterNodes)
+
   simulation = d3
     .forceSimulation<INodeDatum>(nodes)
     .force(
@@ -183,14 +177,6 @@ function graphInit() {
     .force('collide', d3.forceCollide<INodeDatum>(30))
     .force('center', d3.forceCenter<INodeDatum>(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2))
     .on('tick', ticked)
-
-  node.call(
-    d3
-      .drag<SVGGElement, INodeDatum, undefined>()
-      .on('start', dragstarted)
-      .on('drag', dragged)
-      .on('end', dragended)
-  )
 
   simulation.on('tick', function () {
     graph.select('g.gridcanvas').remove()
@@ -226,12 +212,26 @@ onMounted(() => {
     })
     .then(() => graphInit())
 })
+
+function addNode() {
+  const newNode: INodeDatum = { id: 100, type: 'job', job: 'farmer' }
+
+  updateData(newNode)
+}
+
+function removeNode() {
+  const oldNodes = node.data().filter((d) => d.id !== 100)
+
+  node = node.data(oldNodes).join(enterNodes, (update) => update, exit => exit.remove())
+  simulation = simulation.nodes(oldNodes)
+  simulation.restart()
+}
 </script>
 
 <template>
-  <!-- <div>
+  <div>
     <button @click="addNode">Add Node</button>
     <button @click="removeNode">Remove Node</button>
-  </div> -->
+  </div>
   <div ref="canvas" />
 </template>
