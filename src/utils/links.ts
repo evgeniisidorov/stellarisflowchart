@@ -26,7 +26,6 @@ export function buildLinks(nodes: INodeDatum[], job_resources: IJobResource[]): 
   const newLinks: ILinkDatum[] = []
   const record: Record<JobResource, number> = buildJobIndexDict(nodes)
 
-  console.log(selectedNodes.length)
   for (let i = 0; i < selectedNodes.length; i++) {
     const production: IJobResource[] = job_resources.filter(
       (d: IJobResource) => d.job === selectedNodes[i].job

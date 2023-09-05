@@ -1,7 +1,28 @@
 import type { ILinkDatum, INodeDatum } from '@/types/SimulationTypes'
 
+/* todo: rework duplicate */
+export const RESOURCES: string[] = ['food', 'energy', 'mineral', 'alloys', 'consumer_goods']
+export const JOBS: string[] = [
+  'farmer',
+  'technician',
+  'miner',
+  'foundry',
+  'artisan',
+  'angler',
+  'pearl_diver',
+  'catalytic_technician',
+]
+
 export type ResourceType = 'food' | 'energy' | 'mineral' | 'alloys' | 'consumer_goods'
-export type JobType = 'farmer' | 'technician' | 'miner' | 'foundry' | 'artisan'
+export type JobType =
+  | 'farmer'
+  | 'technician'
+  | 'miner'
+  | 'foundry'
+  | 'artisan'
+  | 'angler'
+  | 'catalytic_technician'
+  | 'pearl_diver'
 
 export type NodeType = 'resource' | 'job'
 
@@ -35,24 +56,13 @@ const MockJobResource: IJobResource[] = [
 
 export const mock_data: MockData = {
   links: [
-    // produces
     { source: 5, target: 0, value: 6 },
     { source: 6, target: 1, value: 6 },
     { source: 7, target: 2, value: 4 },
     { source: 8, target: 3, value: 3 },
     { source: 9, target: 4, value: 6 },
-    // job upkeep
     { source: 8, target: 2, value: -6 },
     { source: 9, target: 2, value: -6 }
-    // // living stanard upkeep (food only) for biological pops
-    // { source: 5, target: 0, value: 1 },
-    // { source: 6, target: 0, value: 1 },
-    // { source: 7, target: 0, value: 1 },
-    // { source: 8, target: 0, value: 1 },
-    // { source: 9, target: 0, value: 1 },
-    // // living stanard upkeep (CG only) for specialist strata
-    // { source: 8, target: 4, value: 1 },
-    // { source: 9, target: 4, value: 1 },
   ],
   nodes: [
     { id: 0, resource: 'food', type: 'resource' },

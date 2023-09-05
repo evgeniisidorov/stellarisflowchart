@@ -5,6 +5,7 @@ import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/const
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
 import { buildLinks } from '@/utils/links'
+import { getData, getLinks, getNodes } from '@/utils/data'
 </script>
 
 <script setup lang="ts">
@@ -15,8 +16,8 @@ let graph: d3.Selection<SVGSVGElement, unknown, null, undefined>,
   node: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>,
   simulation: d3.Simulation<INodeDatum, ILinkDatum>
 
-const nodes: Array<INodeDatum> = data.nodes.map((d) => ({ ...d }) as INodeDatum)
-const links: Array<ILinkDatum> = buildLinks(nodes, data.job_resources)
+let nodes: Array<INodeDatum>;
+let links: Array<ILinkDatum>;
 
 const grid: IGrid = buildGrid(CANVAS_WIDTH, CANVAS_HEIGHT, GRID_SIZE)
 
@@ -218,9 +219,12 @@ function graphInit() {
 }
 
 onMounted(() => {
-  console.log(`the flow chart is now mounted.`)
-
-  graphInit()
+  getData()
+    .then((data) => {
+      nodes = getNodes(data)
+      links = getLinks(data)
+    })
+    .then(() => graphInit())
 })
 </script>
 
