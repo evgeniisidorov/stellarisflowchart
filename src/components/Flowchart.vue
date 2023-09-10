@@ -97,6 +97,17 @@ const dragended = (event: any) => {
   event.subject.fy = null
 }
 
+const enterLinks = (
+  enter: d3.Selection<d3.EnterElement, ILinkDatum, SVGGElement, unknown>
+): d3.Selection<SVGLineElement, ILinkDatum, SVGGElement, unknown> => {
+  const container = enter
+    .append('line')
+    .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
+    .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
+
+  return container
+}
+
 const enterNodes = (
   enter: d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown>
 ): d3.Selection<SVGGElement, INodeDatum, SVGGElement, unknown> => {
@@ -151,9 +162,7 @@ const graphInit = () => {
     .attr('stroke-opacity', 0.6)
     .selectAll<SVGLineElement, ILinkDatum>('line')
     .data(links)
-    .join('line')
-    .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
-    .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
+    .join(enterLinks)
 
   node = graph
     .append('g')
@@ -224,6 +233,9 @@ watch(selectedJobs, () => {
       }
     }
   })
+
+  const newlyAddedJobs: string[] = []
+
   selectedJobs.forEach((j) => {
     if (
       !remaningNodes
@@ -232,6 +244,7 @@ watch(selectedJobs, () => {
         .includes(j as JobType)
     ) {
       remaningNodes.push({ type: 'job', name: j })
+      newlyAddedJobs.push(j)
     }
   })
 
@@ -256,17 +269,40 @@ watch(selectedJobs, () => {
     }
   }
 
+  /* Links Update goes below. The goal is to
+    1) filter out links that have either source (job) or target (resource) missing
+    2) iterate over newly added sources i.e jobs
+  */
+
+  const existingNodeNames: string[] = removedEmptyResourcesNodes.map((d) => d.name)
+  const removedIncompleteLinks = link.data().filter(
+    // (d) => existingNodeNames.includes[d.source.name]
+    (d) => true
+  )
+
+  for (const newJob of newlyAddedJobs) {
+    Object.entries(data.filter((d) => d.job === newJob)[0])
+      .filter((x) => x[0] !== 'job' && !!x[1])
+      .map((r) => {
+        removedIncompleteLinks.push({ source: newJob, target: r[0], value: Number(r[1]) })
+      })
+  }
+  const updatedLinks = removedIncompleteLinks.filter((x) =>
+    typeof x.source === 'string'
+      ? existingNodeNames.includes(x.source)
+      : existingNodeNames.includes(x.source.name)
+  )
+
   node = node.data(removedEmptyResourcesNodes, (d) => d.name)
   node = node.join(enterNodes)
+  link = link.data(updatedLinks).join(enterLinks)
+
   simulation.nodes(node.data())
+  simulation.force('link').links(link.data())
   simulation.alpha(1.0).restart()
 })
 </script>
 
 <template>
-  <div>
-    <button @click="addNode">Add Node</button>
-    <button @click="removeNode">Remove Node</button>
-  </div>
   <div ref="canvas" />
 </template>

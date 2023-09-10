@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { selectedJobs } from '@/utils/store'
+import { selectedJobs, popsEmployedAtJobs } from '@/utils/store'
 import { onUpdated, ref } from 'vue'
 
 defineProps<{
@@ -20,8 +20,11 @@ const isToggled = ref(false)
           isToggled = !isToggled
           if (isToggled) {
             selectedJobs.add(jobName)
+            
+            popsEmployedAtJobs[jobName] = 1
           } else {
             selectedJobs.delete(jobName)
+            popsEmployedAtJobs[jobName] = 0
           }
         }
       "
