@@ -1,31 +1,31 @@
 {
-    "farmer": {
-        "food": 6.0
-    },
-    "technician": {
-        "energy": 6.0
-    },
-    "miner": {
-        "mineral": 4.0
-    },
-    "foundry": {
-        "mineral": -6.0,
-        "alloys": 3.0
-    },
-    "artisan": {
-        "mineral": -6.0,
-        "consumer_goods": 6.0
-    },
-    "angler": {
-        "food": 8.0
-    },
-    "pearl_diver": {
-        "food": -3.0,
-        "mineral": -4.0,
-        "consumer_goods": 6.0
-    },
-    "catalytic_technician": {
-        "food": -9.0,
-        "alloys": 3.0
-    }
+  "farmer": {
+    "food": 6.0
+  },
+  "technician": {
+    "energy": 6.0
+  },
+  "miner": {
+    "mineral": 4.0
+  },
+  "foundry": {
+    "mineral": -6.0,
+    "alloys": 3.0
+  },
+  "artisan": {
+    "mineral": -6.0,
+    "consumer_goods": 6.0
+  },
+  "angler": {
+    "food": 8.0
+  },
+  "pearl_diver": {
+    "food": -3.0,
+    "mineral": -4.0,
+    "consumer_goods": 6.0
+  },
+  "catalytic_technician": {
+    "food": -9.0,
+    "alloys": 3.0
+  }
 }

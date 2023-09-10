@@ -1,10 +1,10 @@
 <script lang="ts">
-import { onMounted, ref, type Ref } from 'vue'
-import { type INodeDatum, type ILinkDatum, mock_data as data } from '@/types'
+import { onMounted, ref, watch, type Ref } from 'vue'
+import { type INodeDatum, type ILinkDatum, type JobType } from '@/types'
 import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/constants'
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
-import { getData, getLinks, getNodes } from '@/utils/data'
+import { selectedJobs } from '@/utils/store'
 </script>
 
 <script setup lang="ts">
@@ -17,10 +17,11 @@ let graph: d3.Selection<SVGSVGElement, unknown, null, undefined>,
 
 let nodes: Array<INodeDatum>
 let links: Array<ILinkDatum>
+let data
 
 const grid: IGrid = buildGrid(CANVAS_WIDTH, CANVAS_HEIGHT, GRID_SIZE)
 
-function ticked() {
+const ticked = () => {
   link
     .attr('x1', (d: ILinkDatum): number => (d.source as INodeDatum).x || 0)
     .attr('y1', (d: ILinkDatum): number => (d.source as INodeDatum).y || 0)
@@ -33,9 +34,9 @@ function ticked() {
     .attr('cy', (d: INodeDatum) => d.y || 0)
 }
 
-function updateLink(
+const transformLinkCoordinate = (
   selection: d3.Selection<SVGLineElement, ILinkDatum, SVGGElement, undefined>
-): void {
+): void => {
   selection
     .attr('x1', function (d: ILinkDatum): number {
       return (d.source as INodeDatum).screenX || 0
@@ -51,9 +52,9 @@ function updateLink(
     })
 }
 
-function updateNode(
+const transformNodeCoordinates = (
   selection: d3.Selection<SVGGElement, INodeDatum, SVGGElement, undefined>
-): void {
+): void => {
   selection.attr('transform', function (d: INodeDatum): string {
     const gridpoint = grid.occupyNearest(d)
 
@@ -76,29 +77,29 @@ function updateNode(
   })
 }
 
-function dragstarted(event: any) {
+const dragstarted = (event: any) => {
   if (!event.active) simulation.alphaTarget(0.3).restart()
   event.subject.fx = event.subject.x
   event.subject.fy = event.subject.y
 }
 
 // Update the subject (dragged node) position during drag.
-function dragged(event: any) {
+const dragged = (event: any) => {
   event.subject.fx = event.x
   event.subject.fy = event.y
 }
 
 // Restore the target alpha so the simulation cools after dragging ends.
 // Unfix the subject position now that it’s no longer being dragged.
-function dragended(event: any) {
+const dragended = (event: any) => {
   if (!event.active) simulation.alphaTarget(0)
   event.subject.fx = null
   event.subject.fy = null
 }
 
-function enterNodes(
+const enterNodes = (
   enter: d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown>
-): d3.Selection<SVGGElement, INodeDatum, SVGGElement, unknown> {
+): d3.Selection<SVGGElement, INodeDatum, SVGGElement, unknown> => {
   const container = enter.append('g').attr('class', 'nodeContainer')
   container
     .append('circle')
@@ -110,18 +111,18 @@ function enterNodes(
   container
     .append('image')
     .attr('href', (datum: INodeDatum) => {
-      let iconName
       switch (datum.type) {
+        case 'job': {
+          const url = `../assets/icons/job/job_${datum.name}.png`
+          const imageUrl = new URL(url, import.meta.url)
+          return imageUrl.href
+        }
         case 'resource':
-          iconName = datum.resource
-          break
-        case 'job':
-          iconName = 'job_' + String(datum.job)
-          break
+          return new URL(`../assets/icons/resource/${datum.name}.png`, import.meta.url).href
+        default: {
+          return ''
+        }
       }
-
-      const imageUrl = new URL(`../assets/icons/${datum.type}/${iconName}.png`, import.meta.url)
-      return imageUrl.href
     })
     .attr('width', ICON_SIZE)
     .attr('height', ICON_SIZE)
@@ -137,16 +138,7 @@ function enterNodes(
   return container
 }
 
-function updateData(newNode: INodeDatum): void {
-  const oldNodes: INodeDatum[] = node.data()
-  oldNodes.push(newNode)
-
-  node = node.data(oldNodes).join(enterNodes)
-  simulation = simulation.nodes(oldNodes)
-  simulation.restart()
-}
-
-function graphInit() {
+const graphInit = () => {
   graph = d3
     .select(canvas.value)
     .append('svg')
@@ -163,19 +155,24 @@ function graphInit() {
     .attr('stroke-width', (d: ILinkDatum) => Math.sqrt(Math.abs(d.value)))
     .attr('stroke', (datum: ILinkDatum) => (datum.value > 0 ? 'green' : 'red'))
 
-  node = graph.append('g').selectAll<SVGSVGElement, INodeDatum>('g').data(nodes).join(enterNodes)
+  node = graph
+    .append('g')
+    .selectAll<SVGSVGElement, INodeDatum>('g')
+    .data(nodes, (d) => d.name)
+    .join(enterNodes)
 
   simulation = d3
     .forceSimulation<INodeDatum>(nodes)
     .force(
       'link',
-      d3.forceLink(links).id((d: d3.SimulationNodeDatum, i: number): number => {
-        return d.index || 0
+      d3.forceLink<INodeDatum, ILinkDatum>(links).id((d: INodeDatum, i: number): string => {
+        return d.name
       })
     )
     .force('charge', d3.forceManyBody<INodeDatum>())
-    .force('collide', d3.forceCollide<INodeDatum>(30))
-    .force('center', d3.forceCenter<INodeDatum>(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2))
+    .force('collide', d3.forceCollide<INodeDatum>(5))
+    .force('centerX', d3.forceX<INodeDatum>(CANVAS_WIDTH / 2))
+    .force('centerY', d3.forceY<INodeDatum>(CANVAS_HEIGHT / 2))
     .on('tick', ticked)
 
   simulation.on('tick', function () {
@@ -199,33 +196,71 @@ function graphInit() {
       return
     })
 
-    node.call(updateNode)
-    link.call(updateLink)
+    node.call(transformNodeCoordinates)
+    link.call(transformLinkCoordinate)
   })
 }
 
 onMounted(() => {
-  getData()
-    .then((data) => {
-      nodes = getNodes(data)
-      links = getLinks(data)
+  d3.csv(new URL(`../assets/data.csv`, import.meta.url).href)
+    .then((r) => {
+      data = r
+      nodes = []
+      links = []
     })
-    .then(() => graphInit())
+    .then(() => {
+      graphInit()
+    })
 })
 
-function addNode() {
-  const newNode: INodeDatum = { id: 100, type: 'job', job: 'farmer' }
+watch(selectedJobs, () => {
+  const remaningNodes = node.data().filter((d) => {
+    if (d.type === 'resource') return true
+    else {
+      if (selectedJobs.has(d.name)) {
+        return true
+      } else {
+        return false
+      }
+    }
+  })
+  selectedJobs.forEach((j) => {
+    if (
+      !remaningNodes
+        .filter((d) => d.type === 'job')
+        .map((d) => d.name)
+        .includes(j as JobType)
+    ) {
+      remaningNodes.push({ type: 'job', name: j })
+    }
+  })
 
-  updateData(newNode)
-}
+  const selectedResourceNames: Set<string> = new Set<string>([])
+  const remaningJobDesc = data.filter((d) => remaningNodes.map((n) => n.name).includes(d.job))
+  remaningJobDesc.map((entry) => {
+    const nonZeroResources = Object.entries(entry).filter((x) => x[0] !== 'job' && !!x[1])
+    nonZeroResources.map((d) => selectedResourceNames.add(d[0]))
+  })
 
-function removeNode() {
-  const oldNodes = node.data().filter((d) => d.id !== 100)
+  const removedEmptyResourcesNodes = remaningNodes.filter(
+    (d) => d.type === 'job' || selectedResourceNames.has(d.name)
+  )
 
-  node = node.data(oldNodes).join(enterNodes, (update) => update, exit => exit.remove())
-  simulation = simulation.nodes(oldNodes)
-  simulation.restart()
-}
+  const prevResourceNames = removedEmptyResourcesNodes
+    .filter((d) => d.type === 'resource')
+    .map((x) => x.name) // nodes we skip on update
+
+  for (const resourceInQuestion of selectedResourceNames) {
+    if (!prevResourceNames.includes(resourceInQuestion)) {
+      removedEmptyResourcesNodes.push({ type: 'resource', name: resourceInQuestion })
+    }
+  }
+
+  node = node.data(removedEmptyResourcesNodes, (d) => d.name)
+  node = node.join(enterNodes)
+  simulation.nodes(node.data())
+  simulation.alpha(1.0).restart()
+})
 </script>
 
 <template>

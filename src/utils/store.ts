@@ -1,0 +1,3 @@
+import { reactive } from 'vue'
+
+export const selectedJobs: Set<string> = reactive(new Set<string>([]))
