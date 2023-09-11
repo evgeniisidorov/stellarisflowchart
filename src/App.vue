@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import FlowChart from './components/FlowChart.vue'
 import JobButton from './components/JobButton.vue'
 import * as d3 from 'd3'
+import OutputPanel from './components/OutputPanel.vue';
 
 const items = ref()
 
@@ -19,5 +20,6 @@ onMounted(() => {
       <JobButton v-for="item in items" :jobName="item" v-bind:key="item"></JobButton>
     </ul>
     <FlowChart />
+    <OutputPanel />
   </main>
 </template>

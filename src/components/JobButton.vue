@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { selectedJobs, popsEmployedAtJobs } from '@/utils/store'
-import { onUpdated, ref } from 'vue'
+import { ref } from 'vue'
 
 defineProps<{
   jobName: string
