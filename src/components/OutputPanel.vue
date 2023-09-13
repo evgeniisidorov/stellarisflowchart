@@ -1,44 +1,28 @@
 <script setup lang="ts">
-import { popsEmployedAtJobs, selectedJobs } from '@/utils/store'
+import { popsEmployedAtJobs } from '@/utils/store'
 import { computed, onMounted } from 'vue'
 import * as d3 from 'd3'
 
 let data
 
 const output = computed(() => {
-  const selectedResourceNames = new Set<string>([])
-
-  for (const d of Object.entries(popsEmployedAtJobs)) {
-    const jobName = d[0]
-    const popsEmployed = d[1]
-
-    if (popsEmployed > 0) {
-      Object.entries(data.filter((d) => d.job === jobName)[0])
-        .filter((a) => {
-          return a[0] !== 'job' && a[1]
-        })
-        .map((a) => selectedResourceNames.add(a[0]))
-    }
+  const outputUpkeeps: Record<string, number> = []
+  for (const job in popsEmployedAtJobs) {
+    const resources = data.filter((d) => d.job === job)[0]
+    Object.entries(resources)
+      .filter((d) => d[0] !== 'job' && d[1])
+      .map((x) => {
+        const resourcesFromJob = Number(x[1]) * popsEmployedAtJobs[job]
+        outputUpkeeps[x[0]] = 0
+        outputUpkeeps[x[0]] = outputUpkeeps[x[0]]
+          ? resourcesFromJob
+          : outputUpkeeps[x[0]] + resourcesFromJob
+      })
   }
 
-  const resources: string[] = []
-  const counts: number[] = []
+  console.log(outputUpkeeps)
 
-  data &&
-    data
-      .filter((d) => selectedJobs.has(d.job))
-      .map((d) => Object.entries(d).filter((k) => k[0] !== 'job' && k[1]))
-      .map((d) => {
-        d.map((e) => {
-          if (resources.includes(e[0])) {
-            counts[resources.indexOf(e[0])] = counts[resources.indexOf(e[0])] + Number(e[1])
-          } else {
-            resources.push(e[0])
-            counts.push(Number(e[1]))
-          }
-        })
-      })
-  return [resources, counts]
+  return Object.entries(outputUpkeeps).filter(d => d[1])
 })
 
 onMounted(() => {

@@ -1,10 +1,10 @@
 <script lang="ts">
 import { onMounted, ref, watch, type Ref } from 'vue'
-import { type INodeDatum, type ILinkDatum, type JobType } from '@/types'
+import { type INodeDatum, type ILinkDatum, type JobType, type ISupplyChainNode } from '@/types'
 import { GRID_SIZE, CANVAS_HEIGHT, CANVAS_WIDTH, ICON_SIZE } from '@/utils/constants'
 import * as d3 from 'd3'
 import { buildGrid, type IGrid } from '@/utils/grid'
-import { selectedJobs } from '@/utils/store'
+import { popsEmployedAtJobs, selectedJobs } from '@/utils/store'
 </script>
 
 <script setup lang="ts">
@@ -139,6 +139,51 @@ const enterNodes = (
     .attr('height', ICON_SIZE)
     .attr('transform', `translate(${-ICON_SIZE / 2},${-ICON_SIZE / 2})`)
 
+  const jobNodes = container.filter((d, i) => (d.type || d) === 'job')
+
+  jobNodes
+    .append('text')
+    .attr('class', 'popsEmployedCount')
+    .attr('transform', `translate(${0}, ${ICON_SIZE})`)
+    .attr('text-anchor', 'middle')
+    .text((d) => d.popsEmployed || 1)
+
+  const incrementButton = jobNodes
+    .append('circle')
+    .attr('r', 6)
+    .style('fill', '#20381E')
+    .attr('stroke', '#101814')
+    .attr('stroke-width', 1.5)
+    .attr('transform', `translate(${ICON_SIZE / 2 - 3}, ${ICON_SIZE / 2 - 3})`)
+
+  const decrementButton = jobNodes
+    .append('circle')
+    .attr('r', 6)
+    .style('fill', '#20381E')
+    .attr('stroke', '#101814')
+    .attr('stroke-width', 1.5)
+    .attr('transform', `translate(${-ICON_SIZE / 2 + 3}, ${ICON_SIZE / 2 - 3})`)
+
+  incrementButton.on('click', (e, d) => {
+    if (popsEmployedAtJobs[d.name]) {
+      d.popsEmployed = ++popsEmployedAtJobs[d.name]
+    } else {
+      popsEmployedAtJobs[d.name] = 2
+      d.popsEmployed = 1
+    }
+    d3.selectAll('.popsEmployedCount').text((d) => d.popsEmployed)
+  })
+
+  decrementButton.on('click', (e, d) => {
+    if (popsEmployedAtJobs[d.name] && popsEmployedAtJobs[d.name] > 1) {
+      d.popsEmployed = popsEmployedAtJobs[d.name]--
+    } else {
+      popsEmployedAtJobs[d.name] = 1
+      d.popsEmployed = 1
+    }
+    d3.selectAll('.popsEmployedCount').text((d) => d.popsEmployed)
+  })
+
   container.call(
     d3
       .drag<SVGGElement, INodeDatum, undefined>()
@@ -147,6 +192,14 @@ const enterNodes = (
       .on('end', dragended)
   )
   return container
+}
+
+const updateNodes = (
+  update: d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown>
+): d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown> => {
+  console.log(update.selectAll('.popsEmployedCount'))
+  // update.selectAll('text').data(update.data()).text((d) => d.popsEmployed || 1)
+  return update
 }
 
 const graphInit = () => {
@@ -167,7 +220,7 @@ const graphInit = () => {
   node = graph
     .append('g')
     .selectAll<SVGSVGElement, INodeDatum>('g')
-    .data(nodes, (d) => d.name)
+    .data(nodes, (d) => d.name || d)
     .join(enterNodes)
 
   simulation = d3
@@ -240,7 +293,7 @@ watch(selectedJobs, () => {
     if (
       !remaningNodes
         .filter((d) => d.type === 'job')
-        .map((d) => d.name)
+        .map((d) => d.name || d)
         .includes(j as JobType)
     ) {
       remaningNodes.push({ type: 'job', name: j })
@@ -274,7 +327,7 @@ watch(selectedJobs, () => {
     2) iterate over newly added sources i.e jobs
   */
 
-  const existingNodeNames: string[] = removedEmptyResourcesNodes.map((d) => d.name)
+  const existingNodeNames: string[] = removedEmptyResourcesNodes.map((d) => d.name || d)
   const removedIncompleteLinks = link.data().filter(
     // (d) => existingNodeNames.includes[d.source.name]
     (d) => true
@@ -293,7 +346,7 @@ watch(selectedJobs, () => {
       : existingNodeNames.includes(x.source.name)
   )
 
-  node = node.data(removedEmptyResourcesNodes, (d) => d.name)
+  node = node.data(removedEmptyResourcesNodes, (d) => d.name || d)
   node = node.join(enterNodes)
   link = link.data(updatedLinks).join(enterLinks)
 

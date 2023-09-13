@@ -27,6 +27,7 @@ export type NodeType = 'resource' | 'job'
 export interface ISupplyChainNode {
   type: NodeType
   name: string
+  popsEmployed?: number;
 }
 
 export interface IJobResource {
