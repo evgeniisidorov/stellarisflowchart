@@ -2,33 +2,28 @@
 import { selectedJobs, popsEmployedAtJobs } from '@/utils/store'
 import { ref } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   jobName: string
 }>()
-
 const isToggled = ref(false)
+const url = new URL(`../assets/icons/job/job_${props.jobName}.png`, import.meta.url).href
+
+const onClick = () => {
+  isToggled.value = !isToggled.value
+  if (isToggled.value) {
+    selectedJobs.add(props.jobName)
+
+    popsEmployedAtJobs[props.jobName] = 1
+  } else {
+    selectedJobs.delete(props.jobName)
+    popsEmployedAtJobs[props.jobName] = 0
+  }
+}
 </script>
 
 <template>
-  <div>
-    <input
-      type="checkbox"
-      class="default:ring-2 checked:"
-      @checked="isToggled"
-      @change="
-        (e) => {
-          isToggled = !isToggled
-          if (isToggled) {
-            selectedJobs.add(jobName)
-            
-            popsEmployedAtJobs[jobName] = 1
-          } else {
-            selectedJobs.delete(jobName)
-            popsEmployedAtJobs[jobName] = 0
-          }
-        }
-      "
-      :id="jobName"
-    /><label :for="jobName">{{ jobName }}</label>
+  <div v-on:click="onClick">
+    <input type="checkbox" class="absolute w-0 h-0 opacity-0" @checked="isToggled" :id="jobName" />
+    <img :src="url" :class="`w-6 h-6 ${isToggled ? '' : 'grayscale opacity-50'}`" />
   </div>
 </template>
