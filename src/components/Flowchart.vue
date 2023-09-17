@@ -115,9 +115,7 @@ const enterNodes = (
   container
     .append('circle')
     .attr('r', ICON_SIZE / 2)
-    .style('fill', '#20381E')
-    .attr('stroke', '#101814')
-    .attr('stroke-width', 1.5)
+    .attr('class', 'fill-stone-800 stroke-stone-950 stroke-1')
 
   container
     .append('image')
@@ -142,27 +140,51 @@ const enterNodes = (
   const jobNodes = container.filter((d, i) => (d.type || d) === 'job')
 
   jobNodes
+    .append('circle')
+    .attr('r', 7)
+    .attr('class', 'fill-stone-800 stroke-stone-950 stroke-1')
+    .attr('transform', `translate(${0},${ICON_SIZE / 2 + 5})`)
+
+  jobNodes
     .append('text')
-    .attr('class', 'popsEmployedCount')
-    .attr('transform', `translate(${0}, ${ICON_SIZE})`)
+    .attr('class', 'popsEmployedCount fill-stone-500 text-xs')
+    .attr('transform', `translate(${0}, ${ICON_SIZE - 10 + 4})`)
     .attr('text-anchor', 'middle')
     .text((d) => d.popsEmployed || 1)
 
   const incrementButton = jobNodes
+    .append('g')
+    .attr('class', 'incrementButton')
+    .attr('transform', `translate(${ICON_SIZE / 2 - 6}, ${ICON_SIZE / 2 - 2})`)
+
+  incrementButton
     .append('circle')
     .attr('r', 6)
-    .style('fill', '#20381E')
-    .attr('stroke', '#101814')
-    .attr('stroke-width', 1.5)
-    .attr('transform', `translate(${ICON_SIZE / 2 - 3}, ${ICON_SIZE / 2 - 3})`)
+    .attr('class', 'fill-stone-800 stroke-stone-950 stroke-1')
+
+  incrementButton
+    .append('text')
+    .text('+')
+    .attr('transform', `translate(-4.5, 4.5)`)
+    .attr('class', 'fill-stone-400')
+    .attr('pointer-events', 'none')
 
   const decrementButton = jobNodes
+    .append('g')
+    .attr('class', 'decrementButton')
+    .attr('transform', `translate(${-ICON_SIZE / 2 + 6}, ${ICON_SIZE / 2 - 2})`)
+
+  decrementButton
     .append('circle')
     .attr('r', 6)
-    .style('fill', '#20381E')
-    .attr('stroke', '#101814')
-    .attr('stroke-width', 1.5)
-    .attr('transform', `translate(${-ICON_SIZE / 2 + 3}, ${ICON_SIZE / 2 - 3})`)
+    .attr('class', 'fill-stone-800 stroke-stone-950 stroke-1')
+
+  decrementButton
+    .append('text')
+    .text('-')
+    .attr('transform', `translate(-4.5, 4.5)`)
+    .attr('class', 'fill-stone-400')
+    .attr('pointer-events', 'none')
 
   incrementButton.on('click', (e, d) => {
     if (popsEmployedAtJobs[d.name]) {

@@ -15,7 +15,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <main>
+  <main class="font-sans text-stone-300">
+    <header class="w-96 p-2">
+      <h1 class="text-2xl mb-4">Stellaris Economy Flowchart</h1>
+      <p class="text-base mb-4">
+        This chart is to contrsuct a supply chain in Stellaris. As of now, it supports only
+        biological non-hivemind empires 
+      </p>
+    </header>
     <ControlPanel :jobs="items" />
     <FlowChart />
     <OutputPanel />

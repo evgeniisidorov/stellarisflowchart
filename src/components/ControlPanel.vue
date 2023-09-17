@@ -7,7 +7,8 @@ const props = defineProps<{
 
 <template>
   <div>
-    <ul class="flex">
+    <h2 class="text-center mb-2">Available Jobs</h2>
+    <ul class="flex justify-center">
       <JobButton v-for="job in jobs" :jobName="job" v-bind:key="job"></JobButton>
     </ul>
   </div>

@@ -33,8 +33,18 @@ const output = computed(() => {
       })
   }
 
+  // console.log([
+  //   Object.entries(data[0])
+  //     .filter((x) => x[0] !== 'job')
+  //     .map((x) => x[0])
+  //     .reduce((acc, curr) => ((acc[curr] = ''), acc), {}),
+  //   output,
+  //   upkeep,
+  //   total
+  // ])
+
   return [
-    Object.entries(output).filter((d) => d[1]),
+    Object.entries(output).filter((d) => !!d[1]),
     Object.entries(upkeep).filter((d) => !!d[1]),
     Object.entries(total).filter((d) => !!d[1])
   ]
@@ -51,17 +61,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex gap-4">
-    <div v-for="resource in resources" v-bind:key="resource" class="flex flex-col gap-1 justify-center">
-      <img :src="getResourceIconURL(resource)" class="w-6 h-6" />
-      <span v-for="index in [0,1,2]" v-bind:key="index" class="text-center">
-        {{
-        output[index].filter((x) => x[0] === resource).length
-          ? output[index].filter((x) => x[0] === resource)[0][1]
-          : 0
-      }}
-      </span>
-
+  <div class="flex justify-center">
+    <div class="flex gap-4 justify-center p-2 rounded text-stone-400">
+      <div
+        v-for="resource in resources"
+        v-bind:key="resource"
+        class="flex flex-col gap-1 justify-center"
+      >
+        <img :src="getResourceIconURL(resource)" class="w-6 h-6" />
+        <span v-for="index in [0, 1, 2]" v-bind:key="index" class="text-center">
+          {{
+            output[index].filter((x) => x[0] === resource).length
+              ? output[index].filter((x) => x[0] === resource)[0][1]
+              : 0
+          }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
