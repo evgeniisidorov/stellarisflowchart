@@ -1,46 +1,25 @@
-# stellarisflowcharts
+# Stellaris Flowchart
 
-This template should help get you started developing with Vue 3 in Vite.
+This app allows to model a supply chain in Stellaris economy and compute output and upkeeps for them.
 
-## Recommended IDE Setup
+The project is a single-page [Vue.js](https://vuejs.org/) app that heavily relies on [d3.js](https://d3js.org/).
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## Graph
 
-## Type Support for `.vue` Imports in TS
+I made graph's nodes draggable so you can rearrange them the way you like. As I still try to figure out how to make it [planar](https://en.wikipedia.org/wiki/Planar_graph) and render it nicely 
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## Jobs
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+There are manifold jobs available in Stellaris. As of now, basic jobs available to biological non-hivemind empires are present as well as catalytic technicians (civic `Catalytic Process`) and anglers and pearl divers (civic `Anglers`). I will add more jobs in the future.
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## Resources
 
-## Customize configuration
+Three basic resources: food, minerals, and energy, and two advanced: consumer goods and alloyws are available as well. 
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## Output and upkeeps
 
-## Project Setup
+At the moment, output and upkeeps are not scaled with habitability modifiers. Nevertheless, I will add them later as well as living standard upkeeps.
 
-```sh
-npm install
-```
+## Help
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+If you want to help me with the project, please shoot an email at <evgenii.sidorov4@gmail.com>.s
