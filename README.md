@@ -22,4 +22,4 @@ At the moment, output and upkeeps are not scaled with habitability modifiers. Ne
 
 ## Help
 
-If you want to help me with the project, please shoot an email at <evgenii.sidorov4@gmail.com>.s
+If you want to help me with the project, please shoot an email at <evgenii.sidorov4@gmail.com>.

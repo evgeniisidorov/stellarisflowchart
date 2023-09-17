@@ -122,9 +122,7 @@ const enterNodes = (
     .attr('href', (datum: INodeDatum) => {
       switch (datum.type) {
         case 'job': {
-          const url = `../assets/icons/job/job_${datum.name}.png`
-          const imageUrl = new URL(url, import.meta.url)
-          return imageUrl.href
+          return new URL(`../assets/icons/job/job_${datum.name}.png`, import.meta.url).href
         }
         case 'resource':
           return new URL(`../assets/icons/resource/${datum.name}.png`, import.meta.url).href
@@ -214,14 +212,6 @@ const enterNodes = (
       .on('end', dragended)
   )
   return container
-}
-
-const updateNodes = (
-  update: d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown>
-): d3.Selection<d3.EnterElement, INodeDatum, SVGGElement, unknown> => {
-  console.log(update.selectAll('.popsEmployedCount'))
-  // update.selectAll('text').data(update.data()).text((d) => d.popsEmployed || 1)
-  return update
 }
 
 const graphInit = () => {
